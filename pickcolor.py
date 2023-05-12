@@ -9,15 +9,20 @@ x軸: S[0-100]
 y軸: V[0-100]
 '''
 
-def load_image(filepath: str):
+def load_image(filepath: str, sample: int|None):
     img_array = np.array(Image.open(filepath))
     row, column, _ = img_array.shape
-    #print(f'shape: {img_array.shape}')
-    colorset = set([tuple(img_array[i, j][:3])
-                  for i in range(row) for j in range(column)])
-    #print(colorset)
-    HSV_colorset = [ tuple([ np.round(i, decimals=2) for i in calc_HSV(c)])
-                    for c in colorset]
+    # randがNoneでなければランダムな座標rand箇所から色を取得する
+    if sample is None:
+        colorset = set([tuple(img_array[i, j][:3])
+                        for i in range(row) for j in range(column)])
+    else:
+        rng = np.random.default_rng()
+        colorset = set([tuple(img_array[i, j][:3])
+                        for i in rng.choice(row, size=sample, replace=False)
+                        for j in rng.choice(column, size=sample, replace=False)])
+    HSV_colorset = set([tuple([ np.round(i, decimals=2) for i in calc_HSV(c)])
+                    for c in colorset])
     return HSV_colorset
 
 def calc_HSV(rgb):
@@ -47,13 +52,17 @@ if __name__ == '__main__':
                         nargs='+',
                         action='store',
                         type=Path)
+    parser.add_argument('--sample', '-s', type=int,
+                        nargs='?', default=0, const=100,
+                        help='サンプルサイズを指定し、ランダムな座標n箇所から色を取得するようにします')
     args = parser.parse_args()
     paths = args.imgpaths
+    sample = args.sample if args.sample != 0 else None
+
+    print(sample)
 
     output = 'output_.png'
-
-    saturation_list = []
-    value_list = []
+    HSV_colorset = set()
     for p in paths:
         # ディレクトリの場合
         if Path.is_dir(p):
@@ -61,19 +70,16 @@ if __name__ == '__main__':
                    for filepath in p.glob('**/*.png')])
             print(tmp)
             for p in tmp:
-                HSV_colorset = load_image(p)
-                s = [c[1] for c in HSV_colorset]
-                v = [c[2] for c in HSV_colorset]
-                saturation_list.extend(s)
-                value_list.extend(v)
+                HSV_colorset |= load_image(p, sample)
+
         #ファイルの場合
         else:
-            HSV_colorset = load_image(p)
-            s = [c[1] for c in HSV_colorset]
-            v = [c[2] for c in HSV_colorset]
-            saturation_list.extend(s)
-            value_list.extend(v)
+            HSV_colorset |= load_image(p, sample)
 
+    # set型では順序は保証されないため、一旦tupleに変換して順序を確定させる
+    HSV_colortuple = tuple(HSV_colorset)
+    saturation_list = [ c[1] for c in HSV_colortuple]
+    value_list = [ c[2] for c in HSV_colortuple ]
     save(saturation_list, value_list, output)
     plt.show()
 
