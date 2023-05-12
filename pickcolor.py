@@ -1,4 +1,5 @@
 import argparse
+import re
 from PIL import Image
 import numpy as np
 from matplotlib import pyplot as plt
@@ -44,6 +45,10 @@ def save(saturation, value, output):
                alpha=0.4, s=[3])
     plt.savefig(output)
 
+def progress_bar(i, epoch):
+    bar = '='*i + ('>' if i < epoch-1 else '=') + ' '*(epoch-i-1)
+    print(f'\r[{bar}] {i+1}/{epoch}', end='')
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(prog='pickcolor',
@@ -55,32 +60,40 @@ if __name__ == '__main__':
     parser.add_argument('--sample', '-s', type=int,
                         nargs='?', default=0, const=100,
                         help='サンプルサイズを指定し、ランダムな座標n箇所から色を取得するようにします')
+    parser.add_argument('--view', '-v', action='store_true',
+                        help='処理終了時にグラフを表示する')
+    parser.add_argument('--output', '-o', type=str, default='output.png',
+                        help='出力画像のファイル名を指定')
+
     args = parser.parse_args()
     paths = args.imgpaths
-    sample = args.sample if args.sample != 0 else None
+    sample = args.sample if args.sample > 0 else None
+    is_view = args.view
+    output = args.output
 
-    print(sample)
-
-    output = 'output_.png'
     HSV_colorset = set()
-    for p in paths:
-        # ディレクトリの場合
-        if Path.is_dir(p):
-            tmp = tuple([filepath
-                   for filepath in p.glob('**/*.png')])
-            print(tmp)
-            for p in tmp:
-                HSV_colorset |= load_image(p, sample)
-
-        #ファイルの場合
-        else:
-            HSV_colorset |= load_image(p, sample)
+    imagepaths = set()
+    imagepaths |= set([filepath
+                      for p in paths if Path.is_dir(p)
+                      for filepath in p.glob('**/*')
+                      if re.search(r'.*\.(png|jpe?g)', str(filepath))])
+    imagepaths |= set([filepath for filepath in paths
+                       if Path.is_file(filepath)
+                       and re.search(r'.*\.(png|jpe?g)', str(filepath))])
+    for i, p in enumerate(imagepaths) :
+        progress_bar(i, len(imagepaths))
+        HSV_colorset |= load_image(p, sample)
 
     # set型では順序は保証されないため、一旦tupleに変換して順序を確定させる
     HSV_colortuple = tuple(HSV_colorset)
-    saturation_list = [ c[1] for c in HSV_colortuple]
+    saturation_list = [ c[1] for c in HSV_colortuple ]
     value_list = [ c[2] for c in HSV_colortuple ]
+
     save(saturation_list, value_list, output)
-    plt.show()
+
+    print('\nComplete!')
+    if is_view:
+        print('グラフを別ウインドウで表示します。')
+        plt.show()
 
 
