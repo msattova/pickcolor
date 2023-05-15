@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="style.css">
-  <title>Document</title>
+  <title>カラープロッター</title>
 </head>
 <body>
   <div class="content">
@@ -20,6 +20,21 @@
       <div id="imgPreviewField">
         <canvas id="canvas"></canvas>
       </div>
+    </div>
+    <div class="about">
+      <details>
+        <summary>
+          ざっくり説明：読み込んだ画像の色を取得して「カラーピッカーの四角部分のどのへんの色が使われているのか」を視覚化するプログラムです。
+        </summary>
+        読み込んだ画像に使われている色の情報を読み取って彩度・明度グラフにプロットしています。
+        おおまかには、以下のような手順で処理しています。
+        <ol>
+          <li>読み込んだ画像の1ピクセルごとにRGBを取得し、それらをHSVに変換</li>
+          <li>S（彩度）、V（明度）ともに[0, 100]の値域でグラフ領域にプロット</li>
+        </ol>
+        注意：主に低明度領域で特徴的な曲線がプロットされる現象が確認されております。
+        これは、おそらくRGBとHSVが1対1で対応しているわけではないことが理由で発生している現象です。
+      </details>
     </div>
   </div>
   <script src="main.js"></script>
