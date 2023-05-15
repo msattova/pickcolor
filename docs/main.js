@@ -22,12 +22,17 @@ function _getPointColor(e) {
 canvas.addEventListener('mousedown', _getPointColor);
 
 function getRGBColors(imageData) {
+  // 重複を除くために一旦文字列化して配列に格納する
   let RGBColors = Array();
+  let tmp_str;
   for (let i = 0; i < imageData.length; i += 4){
-    RGBColors.push([imageData[i], imageData[i+1], imageData[i+2]]);
+    tmp_str = [imageData[i], imageData[i+1], imageData[i+2]].join(' ');
+    if (RGBColors.indexOf(tmp_str) == -1){
+      RGBColors.push(tmp_str);
+    }
   }
-  RGBColors = [...new Set(RGBColors.map(JSON.stringify))].map(JSON.parse)
-  return RGBColors;
+  console.log(RGBColors);
+  return RGBColors.map((e) => (e.split(" ")));
 }
 
 function calcHSV(rgb) {
