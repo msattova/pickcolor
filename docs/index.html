@@ -9,16 +9,20 @@
   <title>カラープロッター</title>
 </head>
 <body>
-  <div class="content">
-    <div id="chartpart">
-      <canvas id="chart" width="200px" height="200px"></canvas>
-    </div>
-    <div class="wrapper">
-      <div class="uploadbtn">
-        <input type="file" accept="image/*" id="uploadimage">
-      </div>
-      <div id="imgPreviewField">
-        <canvas id="canvas"></canvas>
+  <div class="col">
+    <div class="row">
+      <div class="content">
+        <div id="chartpart">
+          <canvas id="chart" width="200px" height="200px"></canvas>
+        </div>
+        <div class="wrapper">
+          <div class="uploadbtn">
+            <input type="file" accept="image/*" id="uploadimage">
+          </div>
+          <div id="imgPreviewField">
+            <canvas id="canvas"></canvas>
+          </div>
+        </div>
       </div>
     </div>
     <div class="about">
@@ -26,7 +30,8 @@
         <summary>
           ざっくり説明：読み込んだ画像の色を取得して「カラーピッカーの四角部分のどのへんの色が使われているのか」を視覚化するプログラムです。
         </summary>
-        読み込んだ画像に使われている色の情報を読み取って彩度・明度グラフにプロットしています。
+        <div id="moredetail">
+        具体的には、読み込んだ画像に使われている色の情報を読み取って彩度・明度グラフにプロットしています。
         おおまかには、以下のような手順で処理しています。
         <ol>
           <li>読み込んだ画像の1ピクセルごとにRGBを取得し、それらをHSVに変換</li>
@@ -34,6 +39,7 @@
         </ol>
         注意：主に低明度領域で特徴的な曲線がプロットされる現象が確認されております。
         これは、おそらくRGBとHSVが1対1で対応しているわけではないことが理由で発生している現象です。
+        </div>
       </details>
     </div>
   </div>
